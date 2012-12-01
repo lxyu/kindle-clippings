@@ -35,9 +35,6 @@ def export_txt(clips):
     """
     Export each book's clips to single text.
     """
-    if not os.path.exists(OUTPUT_DIR):
-        os.mkdir(OUTPUT_DIR)
-
     for book in clips:
         lines = []
         for pos in sorted(clips[book]):
