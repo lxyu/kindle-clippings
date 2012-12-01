@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import msgpack
 import collections
+import msgpack
+import os
 
 BOUNDARY = u"==========\r\n"
 DATA_FILE = u"clips.msgpack"
+OUTPUT_DIR = u"output"
 
 
 def get_sections(filename):
@@ -33,12 +35,16 @@ def export_txt(clips):
     """
     Export each book's clips to single text.
     """
+    if not os.path.exists(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
+
     for book in clips:
         lines = []
-        with open(u"%s.txt" % book, 'w') as f:
-            for pos in sorted(clips[book]):
-                lines.append(clips[book][pos].encode('utf-8'))
+        for pos in sorted(clips[book]):
+            lines.append(clips[book][pos].encode('utf-8'))
 
+        filename = os.path.join(OUTPUT_DIR, u"%s.txt" % book)
+        with open(filename, 'w') as f:
             f.write("\n--\n".join(lines))
 
 
@@ -48,7 +54,7 @@ def load_clips():
     """
     try:
         with open(DATA_FILE, 'r') as f:
-            return msgpack.unpack(f)
+            return msgpack.unpack(f, encoding='utf-8')
     except IOError:
         return {}
 
@@ -58,7 +64,7 @@ def save_clips(clips):
     Save new clips to DATA_FILE
     """
     with open(DATA_FILE, 'wb') as f:
-        f.write(msgpack.packb(clips))
+        f.write(msgpack.packb(clips, encoding='utf-8'))
 
 
 def main():
