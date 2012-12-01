@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Kindle Clippings by lxyu</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Kindle Clippings</h1>
+        <p>A simple python script to extract clippings from 'My Clippings.txt', organize, store and output them in a more elegant way.</p>
+
+        <p class="view"><a href="https://github.com/lxyu/kindle-clippings">View the Project on GitHub <small>lxyu/kindle-clippings</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/lxyu/kindle-clippings/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/lxyu/kindle-clippings/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/lxyu/kindle-clippings">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Kindle Clippings</h1>
+
+<p>A simple python script to extract clippings from 'My Clippings.txt', organize, store and output them in a more elegant way.</p>
+
+<h2>Features</h2>
+
+<p>Clippings are stored in a python dict with this structure</p>
+
+<div class="highlight"><pre><span class="n">clips</span> <span class="o">=</span> <span class="p">{</span><span class="s">'book'</span><span class="p">:</span> <span class="p">{</span><span class="s">'position'</span><span class="p">:</span> <span class="s">'clipping'</span><span class="p">}}</span>
+</pre></div>
+
+<p>Msgpack was used to serialize clippings for archive.</p>
+
+<p>Each new <code>My\ Clippings.txt</code> will add clips to previous archive automatically.</p>
+
+<p>Clips will be export to <code>output</code> directory, find them there.</p>
+
+<p>It's EASY and you don't need to care nothing!</p>
+
+<h2>Usage</h2>
+
+<p>Install <code>msgpack-python</code> first.</p>
+
+<div class="highlight"><pre><span class="nv">$ </span>pip install msgpack-python
+</pre></div>
+
+<p>Clone project and put <code>My\ Clippings.txt</code> to project's root.</p>
+
+<p>Run <code>kindle.py</code></p>
+
+<div class="highlight"><pre><span class="nv">$ </span>python kindle.py
+</pre></div>
+
+<p>DONE!</p>
+
+<h2>Demo</h2>
+
+<p>Example output files tree:</p>
+
+<div class="highlight"><pre><span class="nv">$ </span>tree .
+.
+├── My Clippings.txt
+├── README.rst
+├── clips.msgpack
+├── kindle.py
+└── output
+   ├── Hackers &amp; Painters <span class="o">(</span>Paul Graham<span class="o">)</span>.txt
+   ├── Life of Pi <span class="o">(</span>Yann Martel<span class="o">)</span>.txt
+</pre></div>
+
+<p>Example output contet of <code>Hackers &amp; Painters (Paul Graham).txt</code>:</p>
+
+<blockquote>
+<p>Nerds aren't losers. They're just playing a different game, and a game much closer to the one played in the real world. Adults know this. It's hard to find successful adults now who don't claim to have been nerds in high school.</p>
+
+<hr>
+<p>What hackers and painters have in common is that they're both makers. Along with composers, architects, and writers, what hackers and painters are trying to do is make good things. They're not doing research per se, though if in the course of trying to make good things they discover some new technique, so much the better.</p>
+
+<hr>
+<p>This is not a problem for big companies, because they don't win by making great products. Big companies win by sucking less than other big companies.</p>
+</blockquote>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/lxyu">lxyu</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-34552833-8");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
