@@ -25,7 +25,11 @@ def get_clip(section):
         return
 
     clip['book'] = lines[0]
-    clip['position'] = lines[1][26:lines[1].rfind('-')]
+    position = lines[1][26:lines[1].rfind('-')]
+    if not position:
+        return
+
+    clip['position'] = int(position)
     clip['content'] = lines[2]
 
     return clip
@@ -74,7 +78,7 @@ def main():
     for section in sections:
         clip = get_clip(section)
         if clip:
-            clips[clip['book']][int(clip['position'])] = clip['content']
+            clips[clip['book']][clip['position']] = clip['content']
 
     # remove key with empty value
     clips = {k: v for k, v in clips.iteritems() if v}
