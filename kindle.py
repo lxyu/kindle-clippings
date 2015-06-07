@@ -4,6 +4,7 @@
 import collections
 import msgpack
 import os
+import re
 
 BOUNDARY = u"==========\r\n"
 DATA_FILE = u"clips.msgpack"
@@ -25,9 +26,10 @@ def get_clip(section):
         return
 
     clip['book'] = lines[0]
-    position = lines[1][26:lines[1].rfind('-')]
-    if not position:
+    match = re.search(r'(\d+)-\d+', lines[1])
+    if not match:
         return
+    position = match.group(1)
 
     clip['position'] = int(position)
     clip['content'] = lines[2]
