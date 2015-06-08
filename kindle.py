@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import collections
-import msgpack
+import json
 import os
 import re
 
 BOUNDARY = u"==========\r\n"
-DATA_FILE = u"clips.msgpack"
+DATA_FILE = u"clips.json"
 OUTPUT_DIR = u"output"
 
 
@@ -57,8 +57,8 @@ def load_clips():
     """
     try:
         with open(DATA_FILE, 'r') as f:
-            return msgpack.unpack(f, encoding='utf-8')
-    except IOError:
+            return json.load(f)
+    except (IOError, ValueError):
         return {}
 
 
@@ -67,7 +67,7 @@ def save_clips(clips):
     Save new clips to DATA_FILE
     """
     with open(DATA_FILE, 'wb') as f:
-        f.write(msgpack.packb(clips, encoding='utf-8'))
+        json.dump(clips, f)
 
 
 def main():
