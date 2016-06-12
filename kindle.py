@@ -46,9 +46,9 @@ def export_txt(clips):
         for pos in sorted(clips[book]):
             lines.append(clips[book][pos].encode('utf-8'))
 
-        filename = os.path.join(OUTPUT_DIR, u"%s.txt" % book)
+        filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
         with open(filename, 'w') as f:
-            f.write("\n\n--\n\n".join(lines))
+            f.write("\n\n---\n\n".join(lines))
 
 
 def load_clips():
