@@ -80,7 +80,7 @@ def main():
     for section in sections:
         clip = get_clip(section)
         if clip:
-            clips[clip['book']][clip['position']] = clip['content']
+            clips[clip['book']][str(clip['position'])] = clip['content']
 
     # remove key with empty value
     clips = {k: v for k, v in clips.iteritems() if v}
