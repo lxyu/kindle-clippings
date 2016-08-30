@@ -12,7 +12,7 @@ OUTPUT_DIR = u"output"
 
 
 def get_sections(filename):
-    with open(filename, 'r') as f:
+    with open(filename, 'rb') as f:
         content = f.read().decode('utf-8')
     content = content.replace(u'\ufeff', u'')
     return content.split(BOUNDARY)
@@ -47,7 +47,7 @@ def export_txt(clips):
             lines.append(clips[book][pos].encode('utf-8'))
 
         filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
-        with open(filename, 'w') as f:
+        with open(filename, 'wb') as f:
             f.write("\n\n---\n\n".join(lines))
 
 
@@ -56,7 +56,7 @@ def load_clips():
     Load previous clips from DATA_FILE
     """
     try:
-        with open(DATA_FILE, 'r') as f:
+        with open(DATA_FILE, 'rb') as f:
             return json.load(f)
     except (IOError, ValueError):
         return {}
@@ -83,7 +83,7 @@ def main():
             clips[clip['book']][str(clip['position'])] = clip['content']
 
     # remove key with empty value
-    clips = {k: v for k, v in clips.iteritems() if v}
+    clips = {k: v for k, v in clips.items() if v}
 
     # save/export clips
     save_clips(clips)
