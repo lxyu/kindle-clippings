@@ -44,10 +44,16 @@ def export_txt(clips):
     for book in clips:
         lines = []
         for pos in sorted(clips[book]):
-            lines.append(clips[book][pos].encode('utf-8'))
+            lines.append(clips[book][pos])
+
+        # to get a valid filename
+        book = "".join(x for x in book if (x.isalnum() or x in "._- "))
+
+        # creat the output dir if it does not exist
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
 
         filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
-        with open(filename, 'wb') as f:
+        with open(filename, 'w', encoding="utf-8") as f:
             f.write("\n\n---\n\n".join(lines))
 
 
@@ -56,7 +62,7 @@ def load_clips():
     Load previous clips from DATA_FILE
     """
     try:
-        with open(DATA_FILE, 'rb') as f:
+        with open(DATA_FILE, 'r') as f:
             return json.load(f)
     except (IOError, ValueError):
         return {}
@@ -66,7 +72,7 @@ def save_clips(clips):
     """
     Save new clips to DATA_FILE
     """
-    with open(DATA_FILE, 'wb') as f:
+    with open(DATA_FILE, 'w') as f:
         json.dump(clips, f)
 
 
