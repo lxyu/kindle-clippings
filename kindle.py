@@ -49,6 +49,9 @@ def export_txt(clips):
         # to get a valid filename
         book = "".join(x for x in book if (x.isalnum() or x in "._- "))
 
+        # creat the output dir if it does not exist
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+
         filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
         with open(filename, 'w', encoding="utf-8") as f:
             f.write("\n\n---\n\n".join(lines))
