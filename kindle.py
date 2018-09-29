@@ -5,15 +5,17 @@ import collections
 import json
 import os
 import re
+from io import open
 
-BOUNDARY = u"==========\r\n"
+
+BOUNDARY = u"=========="
 DATA_FILE = u"clips.json"
 OUTPUT_DIR = u"output"
 
 
 def get_sections(filename):
-    with open(filename, 'rb') as f:
-        content = f.read().decode('utf-8')
+    with open(filename, 'r',encoding='utf8') as f:
+        content = f.read()
     content = content.replace(u'\ufeff', u'')
     return content.split(BOUNDARY)
 
@@ -21,7 +23,7 @@ def get_sections(filename):
 def get_clip(section):
     clip = {}
 
-    lines = [l for l in section.split(u'\r\n') if l]
+    lines = [l for l in section.split(u'\n') if l]
     if len(lines) != 3:
         return
 
@@ -44,10 +46,10 @@ def export_txt(clips):
     for book in clips:
         lines = []
         for pos in sorted(clips[book]):
-            lines.append(clips[book][pos].encode('utf-8'))
+            lines.append(clips[book][pos])
 
         filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
-        with open(filename, 'wb') as f:
+        with open(filename, 'w',encoding='utf8') as f:
             f.write("\n\n---\n\n".join(lines))
 
 
@@ -56,18 +58,18 @@ def load_clips():
     Load previous clips from DATA_FILE
     """
     try:
-        with open(DATA_FILE, 'rb') as f:
+        with open(DATA_FILE, 'r',encoding='utf8') as f:
             return json.load(f)
     except (IOError, ValueError):
         return {}
-
 
 def save_clips(clips):
     """
     Save new clips to DATA_FILE
     """
-    with open(DATA_FILE, 'wb') as f:
-        json.dump(clips, f)
+    with open(DATA_FILE, 'w',encoding='utf8' ) as f:
+        json_string = json.dumps(clips, ensure_ascii=False ,indent=2)
+        f.write(json_string)
 
 
 def main():
