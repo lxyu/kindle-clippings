@@ -7,7 +7,9 @@ import sys
 import re
 import json
 import argparse
+import dateparser
 import collections
+
 from io import open
 
 BOUNDARY = u"=========="
@@ -27,13 +29,40 @@ def get_clip(section):
         return
 
     clip['book'] = lines[0]
-    match = re.search(r'(\d+)-\d+', lines[1])
-    if not match:
+    positon_match = re.search(r'(\d+)-\d+', lines[1])
+    if not positon_match:
         return
-    position = match.group(1)
+    position = positon_match.group(1)
 
+    date_match = re.search(r'Added on (.+)$', lines[1])
+    if not date_match:
+        return
+    date_str = date_match.group(1)
+    
+    date_time_obj = dateparser.parse(date_string = date_str)
+    epoch = date_time_obj.timestamp()
+    
     clip['position'] = int(position)
-    clip['content'] = lines[2]
+
+    clip['date'] = int(epoch)
+
+    title_author_content = lines[0]    
+    reversed_str = ''.join(list(reversed([c for c in title_author_content])))
+    res  = re.search(r'\)(.+?)\((.+)$',reversed_str)
+    if res:
+        author = ''.join(list(reversed([c for c in res.group(1)])))
+        author = re.sub(r'\(|\)',' ',author)
+        
+        title = ''.join(list(reversed([c for c in res.group(2)])))
+        title = title.strip('(').strip(')')
+    else:
+        title = title_author_content
+        author = ''
+
+    clip['title'] = title
+    clip['author'] = author
+
+    clip['content'] = lines[2]    
 
     return clip
 
@@ -71,7 +100,11 @@ def main(kindle_clippings_file_path, output_path , is_overwrite):
     for section in sections:
         clip = get_clip(section)
         if clip:
-            clips[clip['book']][str(clip['position'])] = clip['content']
+            clips[clip['book']][str(clip['position'])] = {'content': clip['content'],
+                                                          'author':clip['author'],
+                                                          'title':clip['title'],
+                                                          'date':clip['date']
+                                                          }
 
     # remove key with empty value
     clips = {k: v for k, v in clips.items() if v}
@@ -90,7 +123,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     is_overwrite = False
-    if args.overwrite.lower() == "true":
+    if args.overwrite and args.overwrite.lower() == "true":
         is_overwrite = True
 
     main(args.clippings_file , args.output , is_overwrite)
