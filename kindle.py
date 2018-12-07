@@ -29,10 +29,10 @@ def get_clip(section):
         return
 
     clip['book'] = lines[0]
-    positon_match = re.search(r'(\d+)-\d+', lines[1])
-    if not positon_match:
+    position_match = re.search(r'(\d+)-(\d+)', lines[1])
+    if not position_match:
         return
-    position = positon_match.group(1)
+    position = position_match.group(1)
 
     date_match = re.search(r'Added on (.+)$', lines[1])
     if not date_match:
@@ -43,6 +43,7 @@ def get_clip(section):
     epoch = date_time_obj.timestamp()
     
     clip['position'] = int(position)
+    clip['position_end'] = int(position_match.group(2))
 
     clip['date'] = int(epoch)
 
@@ -103,7 +104,8 @@ def main(kindle_clippings_file_path, output_path , is_overwrite):
             clips[clip['book']][str(clip['position'])] = {'content': clip['content'],
                                                           'author':clip['author'],
                                                           'title':clip['title'],
-                                                          'date':clip['date']
+                                                          'date':clip['date'],
+                                                          'pos_end':clip['position_end']
                                                           }
 
     # remove key with empty value
