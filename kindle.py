@@ -28,25 +28,8 @@ def get_clip(section):
     if len(lines) != 3:
         return
 
-    clip['book'] = lines[0]
-    position_match = re.search(r'(\d+)-(\d+)', lines[1])
-    if not position_match:
-        return
-    position = position_match.group(1)
-
-    date_match = re.search(r'Added on (.+)$', lines[1])
-    if not date_match:
-        return
-    date_str = date_match.group(1)
+    clip['content'] = lines[2]
     
-    date_time_obj = dateparser.parse(date_string = date_str)
-    epoch = date_time_obj.timestamp()
-    
-    clip['position'] = int(position)
-    clip['position_end'] = int(position_match.group(2))
-
-    clip['date'] = int(epoch)
-
     title_author_content = lines[0]    
     reversed_str = ''.join(list(reversed([c for c in title_author_content])))
     res  = re.search(r'\)(.+?)\((.+)$',reversed_str)
@@ -59,11 +42,30 @@ def get_clip(section):
     else:
         title = title_author_content
         author = ''
-
     clip['title'] = title
     clip['author'] = author
+    
 
-    clip['content'] = lines[2]    
+    ##TODO: There are some cases where location be recorded in different format:
+     ##  - 您在第 5 页（位置 #111）的书签 | 添加于 2017年2月23日星期四 上午8:00:46
+    position_match = re.search(r'(\d+)-(\d+)', lines[1])
+    if position_match:
+        clip['position'] = int(position_match.group(1))
+        clip['position_end'] = int(position_match.group(2))
+    
+
+    #TODO: i18n support . for example , chinese version of Kindle have the below format
+     ## - 您在位置 #180-180的标注 | 添加于 2017年2月22日星期三 下午7:06:30
+    date_match = re.search(r'Added on (.+)$', lines[1])
+    if date_match:
+        date_str = date_match.group(1)
+        date_time_obj = dateparser.parse(date_string = date_str)
+        epoch = date_time_obj.timestamp()
+        clip['date'] = int(epoch)
+
+    #TODO: To recognise Notes & bookmark. notes have different format with highlight.
+    #Note: - Your Note on page 187 | Location 2850 | Added on Wednesday, July 4, 2018 5:43:04 PM
+    #Bookmark: - Your Bookmark on Location 15572 | Added on Tuesday, July 24, 2018 10:42:15 AM    
 
     return clip
 
@@ -95,18 +97,15 @@ def main(kindle_clippings_file_path, output_path , is_overwrite):
         clips.update(load_clips(output_path))
 
     #import ipdb; ipdb.set_trace()        
-
-    # extract clips
+    #extract clips
     sections = get_sections(kindle_clippings_file_path)
     for section in sections:
         clip = get_clip(section)
-        if clip:
-            clips[clip['book']][str(clip['position'])] = {'content': clip['content'],
-                                                          'author':clip['author'],
-                                                          'title':clip['title'],
-                                                          'date':clip['date'],
-                                                          'pos_end':clip['position_end']
-                                                          }
+        try:
+            if clip and clip['position'] and clip['title']:
+                clips[clip['title']][str(clip['position'])] = clip
+        except KeyError:
+            print("missing minimum attribute {}".format(str(clip)))
 
     # remove key with empty value
     clips = {k: v for k, v in clips.items() if v}
