@@ -8,7 +8,7 @@ import re
 import json
 import argparse
 import dateparser
-from db_adapter import KindleClippingDB
+import db_adapter
 
 BOUNDARY = u"=========="
 
@@ -69,7 +69,7 @@ def get_clip(section):
 
 
 def main(kindle_clippings_file_path, json_db_path , is_overwrite):
-    db = KindleClippingDB(json_db_path)
+    db = db_adapter.KindleClippingDB(json_db_path)
 
     if is_overwrite:
         db.pure_all()
