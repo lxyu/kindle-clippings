@@ -8,9 +8,7 @@ import re
 import json
 import argparse
 import dateparser
-import tinydb
-
-from io import open
+from db_adapter import KindleClippingDB
 
 BOUNDARY = u"=========="
 
@@ -19,7 +17,6 @@ def get_sections(path):
         content = f.read()
     content = content.replace(u'\ufeff', u'')
     return content.split(BOUNDARY)
-
 
 def get_clip(section):
     clip = {}
@@ -65,53 +62,29 @@ def get_clip(section):
 
     #TODO: To recognise Notes & bookmark. notes have different format with highlight.
     #Note: - Your Note on page 187 | Location 2850 | Added on Wednesday, July 4, 2018 5:43:04 PM
-    #Bookmark: - Your Bookmark on Location 15572 | Added on Tuesday, July 24, 2018 10:42:15 AM    
-
+    #Bookmark: - Your Bookmark on Location 15572 | Added on Tuesday, July 24, 2018 10:42:15 AM
+    
     return clip
 
 
-def load_clips(path):
-    """
-    Load previous clips from DATA_FILE
-    """
-    try:
-        with open(path, 'r',encoding='utf8') as f:
-            return json.load(f)
-    except (IOError, ValueError):
-        return {}
 
-def save_clips(clips , output_path):
-    """
-    Save new clips to DATA_FILE
-    """
-    with open(output_path, 'w',encoding='utf8' ) as f:
-        json_string = json.dumps(clips, ensure_ascii=False ,indent=2)
-        f.write(json_string)
+def main(kindle_clippings_file_path, json_db_path , is_overwrite):
+    db = KindleClippingDB(json_db_path)
 
-
-def main(kindle_clippings_file_path, output_path , is_overwrite):
-    clips = collections.defaultdict(dict)
-    
-    if not is_overwrite and os.path.isfile(output_path):
-        # load old clips        
-        clips.update(load_clips(output_path))
+    if is_overwrite:
+        db.pure_all()
 
     #import ipdb; ipdb.set_trace()        
-    #extract clips
     sections = get_sections(kindle_clippings_file_path)
-    for section in sections:
-        clip = get_clip(section)
-        try:
-            if clip and clip['position'] and clip['title']:
-                clips[clip['title']][str(clip['position'])] = clip
-        except KeyError:
-            print("missing minimum attribute {}".format(str(clip)))
+    with db.db:
+        for section in sections:
+            clip = get_clip(section)
+            try:
+                if clip:
+                    db.add_highlight(clip['content'],clip['title'],clip['author'],clip['position'],clip['position_end'],clip['date'])
+            except KeyError:
+                print("missing minimum attribute {}".format(str(clip)))
 
-    # remove key with empty value
-    clips = {k: v for k, v in clips.items() if v}
-
-    # save/export clips
-    save_clips(clips,output_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Kindle clipping to JSON parser')
