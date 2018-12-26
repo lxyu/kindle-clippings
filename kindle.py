@@ -8,7 +8,7 @@ import re
 import json
 import argparse
 import dateparser
-import collections
+import tinydb
 
 from io import open
 
