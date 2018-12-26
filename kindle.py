@@ -80,10 +80,15 @@ def main(kindle_clippings_file_path, json_db_path , is_overwrite):
     #import ipdb; ipdb.set_trace()        
     sections = get_sections(kindle_clippings_file_path)
     with db.db:
+        all_highlights = db.highlights.all()
+        latest_epoch = 0
+        if len(all_highlights) > 0:
+            sorted(all_highlights,key = lambda h : h['datetime_epoch'])
+            latest_epoch = all_highlights[-1]['datetime_epoch']
         for section in sections:
             clip = get_clip(section)
             try:
-                if clip:
+                if clip and clip['date'] > latest_epoch:
                     db.add_highlight(clip['content'],clip['title'],clip['author'],clip['position'],clip['position_end'],clip['date'])
             except KeyError:
                 print("missing minimum attribute {}".format(str(clip)))

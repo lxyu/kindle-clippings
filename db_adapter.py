@@ -20,6 +20,10 @@ class KindleClippingDB(object):
         return id
     
     def _add_highlight(self,book_id,content,pos_start,pos_end,datetime_epoch,other_attrs):
+        hQ = Query()
+        res = self.highlights.search((hQ.book_id == book_id) & (hQ.content == content))
+        if len(res) > 0:
+            return res[0].doc_id 
         doc = dict(other_attrs)
         doc['book_id'] = book_id
         doc['content'] = content
