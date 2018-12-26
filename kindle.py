@@ -8,7 +8,10 @@ import re
 import json
 import argparse
 import dateparser
-import db_adapter
+if __name__ == '__main__':
+    from db_adapter import KindleClippingDB
+else:
+    from .db_adapter import KindleClippingDB
 
 BOUNDARY = u"=========="
 
@@ -69,7 +72,7 @@ def get_clip(section):
 
 
 def main(kindle_clippings_file_path, json_db_path , is_overwrite):
-    db = db_adapter.KindleClippingDB(json_db_path)
+    db = KindleClippingDB(json_db_path)
 
     if is_overwrite:
         db.pure_all()
@@ -87,6 +90,7 @@ def main(kindle_clippings_file_path, json_db_path , is_overwrite):
 
 
 if __name__ == '__main__':
+    
     parser = argparse.ArgumentParser(description='Kindle clipping to JSON parser')
     parser.add_argument('clippings_file',type=str ,help="Kindle My Clippings.txt file path")
     parser.add_argument('--overwrite' , nargs='?', const='True', help="By defult your new JSON file will based on previous parsed JSON,if you have assigned this argument new content will overwrite old one.")
