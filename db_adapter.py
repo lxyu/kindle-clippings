@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import re
 from tinydb import TinyDB , Query
 
 class KindleClippingDB(object):
@@ -34,10 +34,10 @@ class KindleClippingDB(object):
         return id
 
     def add_highlight(self,content,book_title,book_author,pos_start,pos_end,datetime_epoch,other_attrs = {}):
-        book = self.query_book(book_title,book_author)
+        res = self.query_book(book_title,book_author)
         book_id = None
-        if book :
-            book_id = book.doc_id
+        if len(res)>0 :
+            book_id = res[0].doc_id
         else:
             book_id = self.add_book(book_title,book_author)
         id = self._add_highlight(book_id,content,pos_start,pos_end,datetime_epoch,other_attrs)
@@ -45,14 +45,19 @@ class KindleClippingDB(object):
 
     def query_book(self,title,author):
         bookQ = Query()
-        res = self.books.search((bookQ.title == title) & (bookQ.author == author))
-        assert( len(res) <= 1)
-        return res[0] if len(res) > 0 else None 
+        def author_name_matcher(db_value,input_value):
+            db_names = set([x for x in re.split(r'\s|,', db_value) if len(x)>0])
+            input_names = set([x for x in re.split(r'\s|,', input_value) if len(x)>0])
+            return db_names == input_names
+        res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher,author)))
+        return res
 
     def get_highligts_by_book(self,book_title,book_author):
-        book = self.query_book(book_title,book_author)
-        if not book:
-            return
-        res = self.highlights.search(Query().book_id == book.doc_id)
+        books = self.query_book(book_title,book_author)
+        if not books :
+            return []
+        res = []
+        for b in books:
+            res.extend(self.highlights.search(Query().book_id == b.doc_id))
         return res
     
