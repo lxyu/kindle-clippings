@@ -28,7 +28,7 @@ def get_clip(section):
     if len(lines) != 3:
         return
 
-    clip['content'] = lines[2]
+    clip['content'] = lines[2].strip()
     
     title_author_content = lines[0]    
     reversed_str = ''.join(list(reversed([c for c in title_author_content])))
@@ -42,9 +42,8 @@ def get_clip(section):
     else:
         title = title_author_content
         author = ''
-    clip['title'] = title
-    clip['author'] = author
-    
+    clip['title'] = title.strip()
+    clip['author'] = author.strip()
 
     ##TODO: There are some cases where location be recorded in different format:
      ##  - 您在第 5 页（位置 #111）的书签 | 添加于 2017年2月23日星期四 上午8:00:46
@@ -52,7 +51,6 @@ def get_clip(section):
     if position_match:
         clip['position'] = int(position_match.group(1))
         clip['position_end'] = int(position_match.group(2))
-    
 
     #TODO: i18n support . for example , chinese version of Kindle have the below format
      ## - 您在位置 #180-180的标注 | 添加于 2017年2月22日星期三 下午7:06:30
@@ -66,10 +64,7 @@ def get_clip(section):
     #TODO: To recognise Notes & bookmark. notes have different format with highlight.
     #Note: - Your Note on page 187 | Location 2850 | Added on Wednesday, July 4, 2018 5:43:04 PM
     #Bookmark: - Your Bookmark on Location 15572 | Added on Tuesday, July 24, 2018 10:42:15 AM
-    
     return clip
-
-
 
 def main(kindle_clippings_file_path, json_db_path , is_overwrite):
     db = KindleClippingDB(json_db_path)
