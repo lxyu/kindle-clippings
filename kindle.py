@@ -84,7 +84,7 @@ def main(kindle_clippings_file_path, json_db_path , is_overwrite):
             clip = get_clip(section)
             try:
                 if clip and clip['date'] > latest_epoch:
-                    db.add_highlight(clip['content'],clip['title'],clip['author'],clip['position'],clip['position_end'],clip['date'])
+                    db.add_highlight(clip['content'],clip['title'],clip['author'],clip['date'],clip['position'],clip['position_end'])
             except KeyError:
                 print("missing minimum attribute {}".format(str(clip)))
 

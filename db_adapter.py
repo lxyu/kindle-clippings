@@ -19,7 +19,7 @@ class KindleClippingDB(object):
         id = self.books.insert(doc)
         return id
     
-    def _add_highlight(self,book_id,content,pos_start,pos_end,datetime_epoch,other_attrs):
+    def _add_highlight(self,book_id,content,datetime_epoch,pos_start,pos_end,other_attrs):
         hQ = Query()
         res = self.highlights.search((hQ.book_id == book_id) & (hQ.content == content))
         if len(res) > 0:
@@ -27,20 +27,20 @@ class KindleClippingDB(object):
         doc = dict(other_attrs)
         doc['book_id'] = book_id
         doc['content'] = content
-        doc['pos_start'] = pos_start
+        doc['pos_start'] = pos_start if pos_start else 0 
         doc['pos_end'] = pos_end if pos_end else 0
         doc['datetime_epoch'] = datetime_epoch if datetime_epoch else 0
         id =  self.highlights.insert(doc)
         return id
 
-    def add_highlight(self,content,book_title,book_author,pos_start,pos_end,datetime_epoch,other_attrs = {}):
+    def add_highlight(self,content,book_title,book_author,datetime_epoch,pos_start = None,pos_end = None,other_attrs = {}):
         res = self.query_book(book_title,book_author)
         book_id = None
         if len(res)>0 :
             book_id = res[0].doc_id
         else:
             book_id = self.add_book(book_title,book_author)
-        id = self._add_highlight(book_id,content,pos_start,pos_end,datetime_epoch,other_attrs)
+        id = self._add_highlight(book_id,content,datetime_epoch,pos_start,pos_end,other_attrs)
         return id
 
     def query_book(self,title,author):
@@ -52,12 +52,16 @@ class KindleClippingDB(object):
         res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher,author)))
         return res
 
-    def get_highligts_by_book(self,book_title,book_author):
+    def get_highligts_by_book(self,book_title,book_author,book_query = None):
         books = self.query_book(book_title,book_author)
         if not books :
             return []
         res = []
         for b in books:
-            res.extend(self.highlights.search(Query().book_id == b.doc_id))
+            if book_query:
+                q = (((Query().book_id == b.doc_id) & book_query) & ( ~ Query().hidden_mark.exists() ))
+            else:
+                q = ((Query().book_id == b.doc_id)  &  ( ~ Query().hidden_mark.exists() ) )
+            res.extend(self.highlights.search(q))
         return res
     
