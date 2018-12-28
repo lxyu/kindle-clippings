@@ -8,6 +8,7 @@ import re
 import json
 import argparse
 import dateparser
+from tinydb import Query
 if __name__ == '__main__':
     from db_adapter import KindleClippingDB
 else:
@@ -75,11 +76,11 @@ def main(kindle_clippings_file_path, json_db_path , is_overwrite):
     #import ipdb; ipdb.set_trace()        
     sections = get_sections(kindle_clippings_file_path)
     with db.db:
-        all_highlights = db.highlights.all()
+        all_imported_highlights = db.highlights.search( (~ Query().not_by_imported.exists() ) )
         latest_epoch = 0
-        if len(all_highlights) > 0:
-            sorted(all_highlights,key = lambda h : h['datetime_epoch'])
-            latest_epoch = all_highlights[-1]['datetime_epoch']
+        if len(all_imported_highlights) > 0:
+            sorted(all_imported_highlights,key = lambda h : h['datetime_epoch'])
+            latest_epoch = all_imported_highlights[-1]['datetime_epoch']
         for section in sections:
             clip = get_clip(section)
             try:
