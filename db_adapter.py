@@ -19,7 +19,7 @@ class KindleClippingDB(object):
         id = self.books.insert(doc)
         return id
     
-    def _add_highlight(self,book_id,content,datetime_epoch,pos_start,pos_end,other_attrs):
+    def _add_highlight(self,book_id,content,epoch,pos_start,pos_end,other_attrs):
         hQ = Query()
         res = self.highlights.search((hQ.book_id == book_id) & (hQ.content == content))
         if len(res) > 0:
@@ -29,18 +29,18 @@ class KindleClippingDB(object):
         doc['content'] = content
         doc['pos_start'] = pos_start if pos_start else 0 
         doc['pos_end'] = pos_end if pos_end else 0
-        doc['datetime_epoch'] = datetime_epoch if datetime_epoch else 0
+        doc['epoch'] = epoch if epoch else 0
         id =  self.highlights.insert(doc)
         return id
 
-    def add_highlight(self,content,book_title,book_author,datetime_epoch,pos_start = None,pos_end = None,other_attrs = {}):
+    def add_highlight(self,content,book_title,book_author,epoch,pos_start = None,pos_end = None,other_attrs = {}):
         res = self.query_book(book_title,book_author)
         book_id = None
         if len(res)>0 :
             book_id = res[0].doc_id
         else:
             book_id = self.add_book(book_title,book_author)
-        id = self._add_highlight(book_id,content,datetime_epoch,pos_start,pos_end,other_attrs)
+        id = self._add_highlight(book_id,content,epoch,pos_start,pos_end,other_attrs)
         return id
 
     def query_book(self,title,author):

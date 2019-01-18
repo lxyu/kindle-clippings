@@ -79,8 +79,8 @@ def main(kindle_clippings_file_path, json_db_path , is_overwrite):
         all_imported_highlights = db.highlights.search( (~ Query().not_by_imported.exists() ) )
         latest_epoch = 0
         if len(all_imported_highlights) > 0:
-            sorted(all_imported_highlights,key = lambda h : h['datetime_epoch'])
-            latest_epoch = all_imported_highlights[-1]['datetime_epoch']
+            sorted(all_imported_highlights,key = lambda h : h['epoch'])
+            latest_epoch = all_imported_highlights[-1]['epoch']
         for section in sections:
             clip = get_clip(section)
             try:
