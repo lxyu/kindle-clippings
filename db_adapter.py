@@ -49,7 +49,17 @@ class KindleClippingDB(object):
             db_names = set([x for x in re.split(r'\s|,', db_value) if len(x)>0])
             input_names = set([x for x in re.split(r'\s|,', input_value) if len(x)>0])
             return db_names == input_names
+
+        def author_name_matcher_fallback(db_value,input_value):
+            db_value = db_value.lower()
+            input_value = input_value.lower()
+            if ( db_value.find(input_value) != -1 or input_value.find(db_value) != -1):
+                return True
+            else:
+                return False 
         res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher,author)))
+        if (len(res) < 1):
+            res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher_fallback,author)))
         return res
 
     def get_highligts_by_book(self,book_title,book_author,book_query = None):
