@@ -43,7 +43,7 @@ class KindleClippingDB(object):
         id = self._add_highlight(book_id,content,epoch,pos_start,pos_end,other_attrs)
         return id
 
-    def query_book(self,title,author):
+    def query_book(self,title = None,author = None):
         bookQ = Query()
         def author_name_matcher(db_value,input_value):
             db_names = set([x for x in re.split(r'\s|,', db_value) if len(x)>0])
@@ -57,9 +57,17 @@ class KindleClippingDB(object):
                 return True
             else:
                 return False 
-        res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher,author)))
-        if (len(res) < 1):
-            res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher_fallback,author)))
+        res = []
+        if title and author :
+            res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher,author)))
+            if (len(res) < 1):
+                res = self.books.search((bookQ.title == title) & (bookQ.author.test(author_name_matcher_fallback,author)))
+        elif title :
+            res = self.books.search((bookQ.title == title))
+        elif author:
+            res = self.books.search((bookQ.author.test(author_name_matcher,author)))
+            if (len(res) < 1):
+                res = self.books.search((bookQ.author.test(author_name_matcher_fallback,author)))
         return res
 
     def get_highligts_by_book(self,book_title,book_author,book_query = None):
