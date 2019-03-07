@@ -75,7 +75,7 @@ class KindleClippingDB(object):
 
     def query_books(self, query_string):
         if (query_string == None or len(query_string) < 1):
-           res = self.books.all();
+           res = self.books.all()
         else:
            bookQ = Query()
            res = self.books.search((bookQ.title.search(query_string ,flags=re.IGNORECASE )) | ( bookQ.author.search(query_string ,flags=re.IGNORECASE)))
