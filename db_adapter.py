@@ -7,7 +7,7 @@ class KindleClippingDB(object):
 
     def __init__(self, db_path):
         self.db = TinyDB(db_path, sort_keys=True, indent=4,
-                         ensure_ascii=False, allow_nan=False, encoding='utf-8')
+                         ensure_ascii=False, encoding='utf-8')
         self.books = self.db.table('books')
         self.highlights = self.db.table('highlights')
 
