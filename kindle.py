@@ -1,94 +1,108 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# work with Python 3.3+ only
 # -*- coding: utf-8 -*-
 
-import collections
-import json
 import os
+import sys
 import re
+import json
+import argparse
+import dateparser
+from tinydb import Query
+if __name__ == '__main__':
+    from db_adapter import KindleClippingDB
+else:
+    from .db_adapter import KindleClippingDB
 
-BOUNDARY = u"==========\r\n"
-DATA_FILE = u"clips.json"
-OUTPUT_DIR = u"output"
+BOUNDARY = u"=========="
 
-
-def get_sections(filename):
-    with open(filename, 'rb') as f:
-        content = f.read().decode('utf-8')
+def get_sections(path):
+    with open(path, 'r',encoding='utf8') as f:
+        content = f.read()
     content = content.replace(u'\ufeff', u'')
     return content.split(BOUNDARY)
-
 
 def get_clip(section):
     clip = {}
 
-    lines = [l for l in section.split(u'\r\n') if l]
+    lines = [l for l in section.split(u'\n') if l]
     if len(lines) != 3:
         return
 
-    clip['book'] = lines[0]
-    match = re.search(r'(\d+)-\d+', lines[1])
-    if not match:
-        return
-    position = match.group(1)
+    clip['content'] = lines[2].strip()
+    
+    title_author_content = lines[0]    
+    reversed_str = ''.join(list(reversed([c for c in title_author_content])))
+    res  = re.search(r'\)(.+?)\((.+)$',reversed_str)
+    if res:
+        author = ''.join(list(reversed([c for c in res.group(1)])))
+        author = re.sub(r'\(|\)',' ',author)
+        
+        title = ''.join(list(reversed([c for c in res.group(2)])))
+        title = title.strip('(').strip(')')
+    else:
+        title = title_author_content
+        author = ''
+    clip['title'] = title.strip()
+    clip['author'] = author.strip()
 
-    clip['position'] = int(position)
-    clip['content'] = lines[2]
+    ##TODO: There are some cases where location be recorded in different format:
+     ##  - 您在第 5 页（位置 #111）的书签 | 添加于 2017年2月23日星期四 上午8:00:46
+    position_match = re.search(r'(\d+)-(\d+)', lines[1])
+    if position_match:
+        clip['position'] = int(position_match.group(1))
+        clip['position_end'] = int(position_match.group(2))
 
+    #TODO: i18n support . for example , chinese version of Kindle have the below format
+     ## - 您在位置 #180-180的标注 | 添加于 2017年2月22日星期三 下午7:06:30
+    date_match = re.search(r'Added on (.+)$', lines[1])
+    if date_match:
+        date_str = date_match.group(1)
+        date_time_obj = dateparser.parse(date_string = date_str)
+        epoch = date_time_obj.timestamp()
+        clip['date'] = int(epoch)
+
+    #TODO: To recognise Notes & bookmark. notes have different format with highlight.
+    #Note: - Your Note on page 187 | Location 2850 | Added on Wednesday, July 4, 2018 5:43:04 PM
+    #Bookmark: - Your Bookmark on Location 15572 | Added on Tuesday, July 24, 2018 10:42:15 AM
     return clip
 
+def main(kindle_clippings_file_path, json_db_path , is_overwrite):
+    db = KindleClippingDB(json_db_path)
 
-def export_txt(clips):
-    """
-    Export each book's clips to single text.
-    """
-    for book in clips:
-        lines = []
-        for pos in sorted(clips[book]):
-            lines.append(clips[book][pos].encode('utf-8'))
+    if is_overwrite:
+        db.pure_all()
 
-        filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
-        with open(filename, 'wb') as f:
-            f.write("\n\n---\n\n".join(lines))
-
-
-def load_clips():
-    """
-    Load previous clips from DATA_FILE
-    """
-    try:
-        with open(DATA_FILE, 'rb') as f:
-            return json.load(f)
-    except (IOError, ValueError):
-        return {}
-
-
-def save_clips(clips):
-    """
-    Save new clips to DATA_FILE
-    """
-    with open(DATA_FILE, 'wb') as f:
-        json.dump(clips, f)
-
-
-def main():
-    # load old clips
-    clips = collections.defaultdict(dict)
-    clips.update(load_clips())
-
-    # extract clips
-    sections = get_sections(u'My Clippings.txt')
-    for section in sections:
-        clip = get_clip(section)
-        if clip:
-            clips[clip['book']][str(clip['position'])] = clip['content']
-
-    # remove key with empty value
-    clips = {k: v for k, v in clips.items() if v}
-
-    # save/export clips
-    save_clips(clips)
-    export_txt(clips)
+    #import ipdb; ipdb.set_trace()        
+    sections = get_sections(kindle_clippings_file_path)
+    with db.db:
+        all_imported_highlights = db.highlights.search( (~ Query().not_by_imported.exists() ) )
+        latest_epoch = 0
+        if len(all_imported_highlights) > 0:
+            sorted(all_imported_highlights,key = lambda h : h['epoch'])
+            latest_epoch = all_imported_highlights[-1]['epoch']
+        for section in sections:
+            clip = get_clip(section)
+            try:
+                if clip and clip['date'] > latest_epoch:
+                    db.add_highlight(clip['content'],clip['title'],clip['author'],clip['date'],clip['position'],clip['position_end'])
+            except KeyError:
+                print("missing minimum attribute {}".format(str(clip)))
 
 
 if __name__ == '__main__':
-    main()
+    
+    parser = argparse.ArgumentParser(description='Kindle clipping to JSON parser')
+    parser.add_argument('clippings_file',type=str ,help="Kindle My Clippings.txt file path")
+    parser.add_argument('--overwrite' , nargs='?', const='True', help="By defult your new JSON file will based on previous parsed JSON,if you have assigned this argument new content will overwrite old one.")
+    parser.add_argument('--output',default="./clips.json", type=str , help="parsed JSON file path")
+    args = parser.parse_args()
+    if not os.path.isfile(args.clippings_file):
+        print("You need to feed me a 'My Clippings.txt' file")
+        sys.exit(-1)
+
+    is_overwrite = False
+    if args.overwrite and args.overwrite.lower() == "true":
+        is_overwrite = True
+
+    main(args.clippings_file , args.output , is_overwrite)
