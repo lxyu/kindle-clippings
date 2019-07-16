@@ -32,11 +32,25 @@ Install `msgpack-python` first.
 
 Clone project and put `My\ Clippings.txt` to project's root.
 
+Python 2
+-------
+
 Run `kindle.py`
 
 .. code:: bash
 
     $ python kindle.py
+
+DONE!
+
+Python 3
+---------
+
+Run `kindle_python3.py`
+
+.. code:: bash
+
+    $ python3 kindle_python3.py
 
 DONE!
 
@@ -54,6 +68,7 @@ Example output files tree:
     ├── README.rst
     ├── clips.msgpack
     ├── kindle.py
+    ├── kindle_python3.py
     └── output
         ├── Hackers & Painters (Paul Graham).txt
         ├── Life of Pi (Yann Martel).txt
