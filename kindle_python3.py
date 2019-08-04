@@ -47,9 +47,9 @@ def export_txt(clips):
             lines.append(clips[book][pos].encode('utf-8'))
 
         filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
-     
+
         with open(filename, 'wb') as f:
-        # Original is f.write("\n\n---\n\n".join(lines))
+            # Original is f.write("\n\n---\n\n".join(lines))
             f.write(b"\n\n---\n\n".join(lines))
 
 
