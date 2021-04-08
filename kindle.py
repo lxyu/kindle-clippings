@@ -44,10 +44,12 @@ def export_txt(clips):
     for book in clips:
         lines = []
         for pos in sorted(clips[book]):
-            lines.append(clips[book][pos].encode('utf-8'))
+            lines.append(clips[book][pos])
 
         filename = os.path.join(OUTPUT_DIR, u"%s.md" % book)
-        with open(filename, 'wb') as f:
+        if len(filename)>=50:
+            filename=filename[:50]
+        with open(filename, 'w') as f:
             f.write("\n\n---\n\n".join(lines))
 
 
@@ -67,7 +69,7 @@ def save_clips(clips):
     Save new clips to DATA_FILE
     """
     with open(DATA_FILE, 'wb') as f:
-        json.dump(clips, f)
+        f.write(json.dumps(clips).encode('utf-8'))
 
 
 def main():
